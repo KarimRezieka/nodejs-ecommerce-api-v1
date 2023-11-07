@@ -1,0 +1,26 @@
+1-npm init -y to install the package.json
+
+2-install nodemon : - npm i -D nodemon
+to run it use :- npm run dev 
+and go to package.json and change script to 
+ "scripts": {
+    "dev": "nodemon server.js"
+  },
+
+3-make the env variable by make .env
+and install dotenv to access it 
+npm install dotenv
+
+
+####################### at model 
+slug :- 
+
+#######################
+asyncHandler :-
+
+#######################
+pagintation :- 
+
+
+#######################
+how to change error from dev mode to product mode i dont want it to be in detail
