@@ -24,3 +24,29 @@ pagintation :-
 
 #######################
 how to change error from dev mode to product mode i dont want it to be in detail
+
+####################### 
+handle errors outside the express : -
+process.on("unhandledRejection",(err)=>{
+    console.log(`unhandledRejection ${err.name} || ${err.message}`);
+    server.close(()=>{
+        console.log("Shutting down .....")
+        process.exit(1)
+    })
+})
+
+#######################
+validator:
+  ده انا بستخدمه اني لو عندي ايرور مثلا في ال روت مش محتاج استنا لحد مايروح
+  للداتا بيز عشان يبين الايرور ده انا بعمل فلديت في الروت الاول 
+  exp:-.get(param('id').isMongoId().withMessage("Inavalid Category ID"), انا بعمل ال فلديت هنا rules
+(req,res)=>{ middlware ده ال 
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
+    }
+    next() انا هنا عملت النكست عشان لو الشرط ده لم اتحقق يروح علي الي بعده
+}
+,getCategory)
+
+

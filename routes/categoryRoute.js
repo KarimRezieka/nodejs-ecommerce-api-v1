@@ -7,12 +7,18 @@ const {
     deleteCategory
 } = require('../services/categoryService');
 const { updateMany } = require('../models/categoryModel');
+const { body } = require('express-validator');
+const { getCategoryValidator 
+        ,createCategoryValidator
+        ,updateCategoryValidator
+        ,deleteCategoryValidator
+    } = require('../utils/validators/categoryValidator');
 const router = express.Router();
 router.route('/')
 .get(getCategories)
-.post(createCategory);
+.post(createCategoryValidator,createCategory);
 router.route('/:id')
-.get(getCategory)
-.put(updataCategory)
-.delete(deleteCategory); 
+.get(getCategoryValidator,getCategory)
+.put(updateCategoryValidator,updataCategory)
+.delete(deleteCategoryValidator,deleteCategory); 
 module.exports = router;
