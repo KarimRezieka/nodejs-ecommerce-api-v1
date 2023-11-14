@@ -50,3 +50,6 @@ validator:
 ,getCategory)
 
 
+const router = express.Router({mergeParams: true});
+بيستخدم في حاله ال nested route 
+mergeParams: true to make access to all routes from another place
