@@ -40,7 +40,7 @@ app.all("*",(req,res,next)=>{
 //global error handling middlware in express
 app.use(globalError);
 const PORT = process.env.PORT || 8000;
-app.listen(PORT,()=>{
+const server = app.listen(PORT,()=>{
     console.log(`app running ${PORT}`)
 })
 
