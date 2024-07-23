@@ -7,13 +7,40 @@ const ApiError = require("../utils/apiError");
 // @route   GET /api/v1/Products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res) => {
+  // 1)) pagination
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
-  const Products = await ProdcutModel.find({})
+  // 2)) Filtering
+  const queryStringObj = { ...req.query };
+  const excludesFields = ["page", "sort", "limit", "fields"];
+  excludesFields.forEach((field) => {
+    delete queryStringObj[field];
+  });
+        // Appling [gte,gt,lte,lt]
+  let queryStr = JSON.stringify(queryStringObj);
+        //add $ befor gte ,.....
+  queryStr = queryStr.replace(/(gte|gt|lte|lt)\b/g,match=>`$${match}`)
+  console.log(queryStr)
+  console.log(JSON.parse(queryStr))
+  console.log(queryStringObj);
+
+  // 3)) Sorting 
+  if(req.query.sort){
+    const sortBy = req.query.sort.split(',').join(' ')
+    if(sortBy){
+      mongooseQuery=mong;ooseQuery.sort(sortBy)
+    }else{
+      mongooseQuery=mong;ooseQuery.sort('-createdAt')
+    }
+  }
+  // Build Query
+  const mongooseQuery = ProdcutModel.find(JSON.parse(queryStr))
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name -_id" });
+  // Execute Query 
+  const Products = await mongooseQuery ;
   res.status(200).json({ result: Products.length, page, data: Products });
 });
 
