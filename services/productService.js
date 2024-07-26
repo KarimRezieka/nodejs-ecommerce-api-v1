@@ -2,46 +2,31 @@ const { default: slugify } = require("slugify");
 const asyncHandler = require("express-async-handler");
 const ProdcutModel = require("../models/productModel");
 const ApiError = require("../utils/apiError");
+const ApiFeatures = require("../utils/ApiFeatures");
 
 // @desc    Get List of Products
 // @route   GET /api/v1/Products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res) => {
-  // 1)) pagination
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit;
-  // 2)) Filtering
-  const queryStringObj = { ...req.query };
-  const excludesFields = ["page", "sort", "limit", "fields"];
-  excludesFields.forEach((field) => {
-    delete queryStringObj[field];
-  });
-        // Appling [gte,gt,lte,lt]
-  let queryStr = JSON.stringify(queryStringObj);
-        //add $ befor gte ,.....
-  queryStr = queryStr.replace(/(gte|gt|lte|lt)\b/g,match=>`$${match}`)
-  console.log(queryStr)
-  console.log(JSON.parse(queryStr))
-  console.log(queryStringObj);
+  try {
+    // Initialize ApiFeatures with a Mongoose query object
+    const apiFeatures = new ApiFeatures(ProdcutModel.find(), req.query)
+      .filter()
+      .search()
+      .limitingFields()
+      .sort()
+      .paginate(); 
+      
+    // Execute Query
+    let Products = await apiFeatures.mongooseQuery;
 
-  // 3)) Sorting 
-  if(req.query.sort){
-    const sortBy = req.query.sort.split(',').join(' ')
-    if(sortBy){
-      mongooseQuery=mong;ooseQuery.sort(sortBy)
-    }else{
-      mongooseQuery=mong;ooseQuery.sort('-createdAt')
-    }
+    // Uncomment if population is needed
+    Products = await apiFeatures.mongooseQuery.populate({ path: "category", select: "name -_id" });
+
+    res.status(200).json({ result: Products.length, data: Products });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
   }
-  // Build Query
-  const mongooseQuery = ProdcutModel.find(JSON.parse(queryStr))
-    .skip(skip)
-    .limit(limit)
-    .populate({ path: "category", select: "name -_id" });
-  // Execute Query 
-  const Products = await mongooseQuery ;
-  res.status(200).json({ result: Products.length, page, data: Products });
 });
 
 // @desc    Get Spacific of Products
