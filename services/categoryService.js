@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const CategoryModel = require("../models/categoryModel");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/ApiFeatures");
+const factory = require('./handlersFactory')
 
 exports.getCategories = asyncHandler(async (req, res) => {
   const DoucmentCount = await CategoryModel.countDocuments();
@@ -44,16 +45,12 @@ exports.updataCategory = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: category });
 });
 
-exports.createCategory = asyncHandler(async (req, res) => {
-  const { name } = req.body;
-  const category = await CategoryModel.create({ name, slug: slugify(name) });
-  res.status(201).json({ data: category });
-});
-exports.deleteCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const category = await CategoryModel.findOneAndDelete({ _id: id });
-  if (!category) {
-    return next(new ApiError(`No Category Find for this ID ${id}`, 404));
-  }
-  res.status(204).send();
-});
+// @desc    Update Spacific of Category
+// @route   PUT /api/v1/Category:id
+// @access  Private
+exports.createCategory = factory.updateOne(CategoryModel);
+
+// @desc    Delete Spacific of Category
+// @route   PUT /api/v1/Category:id
+// @access  Private
+exports.deleteCategory = factory.deleteOne(CategoryModel);

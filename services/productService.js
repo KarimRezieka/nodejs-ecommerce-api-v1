@@ -3,14 +3,14 @@ const asyncHandler = require("express-async-handler");
 const ProdcutModel = require("../models/productModel");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/ApiFeatures");
-const productModel = require("../models/productModel");
+const factory = require("./handlersFactory");
 
 // @desc    Get List of Products
 // @route   GET /api/v1/Products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res) => {
   try {
-    const DoucmentCount = await productModel.countDocuments();
+    const DoucmentCount = await ProdcutModel.countDocuments();
     console.log(DoucmentCount);
     // Initialize ApiFeatures with a Mongoose query object
     const apiFeatures = new ApiFeatures(ProdcutModel.find(), req.query)
@@ -22,7 +22,6 @@ exports.getProducts = asyncHandler(async (req, res) => {
 
     // Execute Query
     const { mongooseQuery, paginationResult } = apiFeatures;
-
 
     // Uncomment if population is needed
     const Products = await mongooseQuery.populate({
@@ -56,17 +55,7 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
 // @desc    Update Spacific of Prodcut
 // @route   PUT /api/v1/Products:id
 // @access  Private
-exports.updataProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  req.body.slug = slugify(req.body.title);
-  const Product = await ProdcutModel.findOneAndUpdate({ _id: id }, req.body, {
-    new: true,
-  });
-  if (!Product) {
-    return next(new ApiError(`No Product Find for this ID ${id}`, 404));
-  }
-  res.status(200).json({ data: Product });
-});
+exports.updataProduct = factory.updateOne(ProdcutModel)
 
 // @desc    Create Procut
 // @route   POST /api/v1/Products
@@ -80,11 +69,4 @@ exports.createProduct = asyncHandler(async (req, res) => {
 // @desc    Delete Spacific of Prodcut
 // @route   PUT /api/v1/Products:id
 // @access  Private
-exports.deleteProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const Product = await ProdcutModel.findOneAndDelete({ _id: id });
-  if (!Product) {
-    return next(new ApiError(`No Product Find for this ID ${id}`, 404));
-  }
-  res.status(204).send();
-});
+exports.deleteProduct = factory.deleteOne(ProdcutModel);
