@@ -3,27 +3,36 @@ const asyncHandler = require("express-async-handler");
 const ProdcutModel = require("../models/productModel");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/ApiFeatures");
+const productModel = require("../models/productModel");
 
 // @desc    Get List of Products
 // @route   GET /api/v1/Products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res) => {
   try {
+    const DoucmentCount = await productModel.countDocuments();
+    console.log(DoucmentCount);
     // Initialize ApiFeatures with a Mongoose query object
     const apiFeatures = new ApiFeatures(ProdcutModel.find(), req.query)
       .filter()
       .search()
       .limitingFields()
       .sort()
-      .paginate(); 
-      
+      .paginate(DoucmentCount);
+
     // Execute Query
-    let Products = await apiFeatures.mongooseQuery;
+    const { mongooseQuery, paginationResult } = apiFeatures;
+
 
     // Uncomment if population is needed
-    Products = await apiFeatures.mongooseQuery.populate({ path: "category", select: "name -_id" });
+    const Products = await mongooseQuery.populate({
+      path: "category",
+      select: "name -_id",
+    });
 
-    res.status(200).json({ result: Products.length, data: Products });
+    res
+      .status(200)
+      .json({ result: Products.length, paginationResult, data: Products });
   } catch (error) {
     res.status(500).json({ status: "error", message: error.message });
   }
