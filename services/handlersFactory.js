@@ -28,3 +28,34 @@ exports.updateOne = (Model) =>
     }
     res.status(200).json({ data: Document });
   });
+
+exports.createOne = (Model)=> asyncHandler(async (req, res) => {
+    const Document = await Model.create(req.body);
+    res.status(201).json({ data: Document });
+  });
+
+exports.getOne = (Model)=>asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const Document = await Model.findById(id);
+    if (!Document) {
+      return next(new ApiError(`No SubCategory Find for this ID ${id}`, 404));
+    }
+    res.status(200).json({ data: Document });
+  });
+
+  exports.getAll = (Model)=> asyncHandler(async (req, res) => {
+    const DoucmentCount = await Model.countDocuments();
+    console.log(DoucmentCount);
+    // Initialize ApiFeatures with a Mongoose query object
+    const apiFeatures = new ApiFeatures(Model.find(), req.query)
+      .filter()
+      .search()
+      .limitingFields()
+      .sort()
+      .paginate(DoucmentCount);
+    const { mongooseQuery, paginationResult } = apiFeatures;
+    const Documents = await mongooseQuery;
+    res
+      .status(200)
+      .json({ result: Documents.length, paginationResult, data: Documents });
+  });
