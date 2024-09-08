@@ -1,3 +1,5 @@
+const path = require('path')
+
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
@@ -8,6 +10,7 @@ const categoryRoute = require("./routes/categoryRoute");
 const supCategoryRoute = require("./routes/subCategoryRoute");
 const brandRoute = require("./routes/brandRoute");
 const productRoute = require("./routes/productRoute");
+const userRoute = require("./routes/userRoute");
 const ApiError = require("./utils/apiError");
 const globalError = require("./middleware/ErrorMiddlware");
 
@@ -23,6 +26,7 @@ if (process.env.NODE_ENV === "development") {
 }
 //Moutn routes
 app.use(express.json());
+app.use(express.static(path.join(__dirname,'uploads')))
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/v1/categories", categoryRoute);
@@ -32,6 +36,8 @@ app.use("/api/v1/subcategories", supCategoryRoute);
 app.use("/api/v1/brands", brandRoute);
 
 app.use("/api/v1/products", productRoute);
+
+app.use("/api/v1/users",userRoute)
 
 app.all("*", (req, res, next) => {
   next(new ApiError(`cant find this route:${req.originalUrl}`, 400));
