@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const ApiError = require('../utils/apiError')
 const User = require("../models/userModel");
 const {uploadSingleImage} = require('../middleware/uploadImageMiddlware')
-
+const createToken = require('../utils/createToken');
 const factory = require("./handlersFactory");
 
 // Upload single Image 
@@ -79,6 +79,56 @@ exports.changeUserPassword = asyncHandler(async (req, res, next) => {
 exports.createUser = factory.createOne(User);
 
 // @desc    Delete Spacific of user
-// @route   PUT /api/v1/users/:id
+// @route   Delete /api/v1/users/:id
 // @access  Private
 exports.deleteUser = factory.deleteOne(User);
+
+// @desc    GET logged user password
+// @route   GET /api/v1/users/getMe
+// @access  Private/protect
+exports.getLoggedUserData = asyncHandler(async(req,res,next)=>{
+  // this is the important part 
+  req.params.id = req.user._id
+  next()
+})
+
+// @desc    Update logged user password
+// @route   PUT /api/v1/users/updateMyPassword
+// @access  Private/protect
+exports.updateLoggedUserPassword = asyncHandler(async(req,res,next)=>{
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+     password:await bcrypt.hash(req.body.password),
+     PasswordChangedAt:Date.now(),
+    },{
+      new:true,
+    }
+  );
+  //2) Generate Token
+  const token = createToken(user._id);
+
+  res.status(200).json({ data: user });
+})
+
+// @desc    Update logged user Data
+// @route   PUT /api/v1/users/updateMe
+// @access  Private/protect
+exports.UpdateLoggedUserData = asyncHandler(async(req,res,next)=>{
+const updateUser = await User.findOneAndUpdate(req.user._id,{
+  name:req.body.name,
+  email:req.body.name,
+  phone:req.body.phone,
+
+},{
+  new:true
+})
+})
+
+// @desc    Deactivate logged user 
+// @route   DELETE /api/v1/users/deleteMe
+// @access  Private/protect
+exports.deleteLoggedUserData = asyncHandler(async(req,res,next)=>{
+  await User.findByIdAndDelete(req.user._id,{active:false})
+  res.status(204).json({status:'Sucess'})
+})
