@@ -9,6 +9,7 @@ const {
   uploadCategoryImage,
   resizeImage,
 } = require("../services/categoryService");
+const authService= require('../services/authService')
 const { updateMany } = require("../models/categoryModel");
 const {
   getCategoryValidator,
@@ -26,6 +27,7 @@ router
   .route("/")
   .get(getCategories)
   .post(
+    authService.protect,
     uploadCategoryImage,
     resizeImage,
     createCategoryValidator,

@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const sharp = require('sharp');
+const bcrypt = require('bcryptjs')
 const { v4: uuidv4 } = require("uuid");
+const ApiError = require('../utils/apiError')
 const User = require("../models/userModel");
 const {uploadSingleImage} = require('../middleware/uploadImageMiddlware')
 
@@ -35,8 +37,42 @@ exports.getUser = factory.getOne(User);
 // @desc    Update Spacific of user
 // @route   PUT /api/v1/users/:id
 // @access  Private
-exports.updateUser = factory.updateOne(User);
+exports.updateUser =asyncHandler(async (req, res, next) => {
+  const Document = await User.findByIdAndUpdate(
+    req.params.id,
+    {
+      name:req.body.name,
+      slug:req.body.slug,
+      phone:req.body.phone,
+      email:req.body.email,
+      profileImg:req.body.profileImg,
+      role:req.body.role
+    }
+  );
+  if (!Document) {
+    return next(
+      new ApiError(`No Document Find for this ID ${req.params.id}`, 404)
+    );
+  }
+  res.status(200).json({ data: Document });
+});
 
+
+exports.changeUserPassword = asyncHandler(async (req, res, next) => {
+  const Document = await User.findByIdAndUpdate(
+    req.params.id,
+    {
+     password:await bcrypt.hash(req.body.password),
+     PasswordChangedAt:Date.now(),
+    }
+  );
+  if (!Document) {
+    return next(
+      new ApiError(`No Document Find for this ID ${req.params.id}`, 404)
+    );
+  }
+  res.status(200).json({ data: Document });
+});
 // @desc    Create user
 // @route   POST /api/v1/users
 // @access  Private
